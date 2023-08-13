@@ -24,7 +24,7 @@ contract MessageRouter{
         if(block.chainid == chainId){
             MessagePool messagePool = MessagePool(messagePoolAddress);
             messagePool.sendMessage(message,msg.sender);
-            
+
         }else{
             //cross chain message sending
             bytes memory payload = abi.encodeWithSignature("sendMessage(chainID, sender, message)",chainId, msg.sender, message);

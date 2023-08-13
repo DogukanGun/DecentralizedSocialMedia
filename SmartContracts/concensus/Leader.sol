@@ -4,6 +4,10 @@ pragma solidity >=0.7.0 <0.9.0;
 import "./Miner.sol";
 import "./Registery.sol";
 
+interface IMessageFactory{
+    function createMessagePool(string calldata topic) external;
+}
+
 contract Leader{
 
     uint256 turnNumber = 0;
@@ -11,7 +15,7 @@ contract Leader{
     bool isVotingOn;
     bool isRecommendationOn;
     uint256 totalStake;
-    address messageRouter;
+    address messageFactory;
     address public registeryAddress;
     address public chosenMiner;
 
@@ -34,9 +38,9 @@ contract Leader{
     mapping(uint256=>Candidate[]) public topicsForVote;
     mapping(uint256=>Candidate[]) public candidates;
 
-    constructor(address _messageRouter){
+    constructor(address _messageFactory){
         totalStake = 0;
-        messageRouter = _messageRouter;
+        messageFactory = _messageFactory;
         createRegistery();
         createFirstTerm();
     }
@@ -131,6 +135,11 @@ contract Leader{
 
     function finishVoting() external votingOn{
         isVotingOn = false;
+        for (uint256 index = 0; index<topicsForVote[turnNumber].length; index++) 
+        {
+            IMessageFactory messageFactoryContract = IMessageFactory(messageFactory);
+            messageFactoryContract.createMessagePool(topicsForVote[turnNumber][index].value);
+        }
         //TODO send result to message router
         startRecommendation();
     }
